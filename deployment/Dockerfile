@@ -1,44 +1,45 @@
 # deployment/Dockerfile
-# Multi-stage build for TensorFlow + Streamlit app
+# Multi-stage build: install deps in builder, copy to slim runtime image.
 
 FROM python:3.12-slim AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency file
-COPY pyproject.toml ./
+# Install uv from the official, version-pinned image (avoids `curl | sh`)
+COPY --from=ghcr.io/astral-sh/uv:0.11.16 /uv /usr/local/bin/uv
 
-# Install uv and dependencies
-RUN pip install --no-cache-dir uv
-RUN uv sync --frozen
+# Copy lockfile and project config first for layer caching
+COPY pyproject.toml uv.lock ./
 
-# Copy source code
+# Install dependencies into an in-project venv
+RUN uv sync --frozen --no-dev
+
+# Copy source
 COPY src/ src/
 COPY app.py ./
 
-# Final runtime stage
+# ── Runtime stage ─────────────────────────────────────────────────────────────
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the pre-built venv and source from builder
+COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
 COPY --from=builder /app /app
 
-# Add uv to PATH
-ENV PATH="/root/.local/bin:$PATH"
-
-# Expose Streamlit port
 EXPOSE 8501
 
-# Health check
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s \
+    CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
-# Run the Streamlit app
-CMD ["uv", "run", "streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["uv", "run", "streamlit", "run", "app.py", \
+     "--server.port=8501", \
+     "--server.address=0.0.0.0", \
+     "--server.headless=true"]

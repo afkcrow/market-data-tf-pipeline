@@ -1,9 +1,14 @@
-from pydantic import BaseModel
 from pathlib import Path
 
+from pydantic import BaseModel, Field
+
+
 class FetchConfig(BaseModel):
-    # (same class as in fetcher.py — you can import from here later)
-    exchange_id: str = Field(..., description="CCXT exchange id (e.g. binance, bybit, coinbase)")
-    symbols: list[str] = ["BTC/USDT", "ETH/USDT"]
-    timeframe: str = "15m"
-    data_dir: Path = Path("data/raw")
+    exchange_id: str = Field(
+        default="coinbase",
+        description="CCXT exchange id (e.g. binance, bybit, coinbase)",
+    )
+    symbols: list[str] = Field(default_factory=lambda: ["BTC/USDT", "ETH/USDT"])
+    timeframe: str = Field(default="15m")
+    data_dir: Path = Field(default=Path("data/raw"))
+    limit_per_request: int = Field(default=1000)

@@ -26,10 +26,14 @@ venv/
 ENV/
 
 # Data & Models
+data/raw/*
+!data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
 models/*.h5
 models/*.pb
+models/*.keras
+models/*.pkl
 *.pkl
 *.joblib
 
