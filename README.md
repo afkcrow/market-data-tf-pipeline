@@ -142,6 +142,7 @@ docker run -p 8501:8501 market-data-tf-pipeline
 
 ## Design notes
 
+- **Honest baseline.** Training reports the LSTM against a naive persistence forecast (next close = current close) via a `skill_score` and directional accuracy (`src/evaluation/baseline.py`). On noisy 24/7 crypto a next-step model that doesn't clear persistence hasn't learned much — this makes that explicit instead of hiding it.
 - **No data leakage.** `MinMaxScaler` is fit on the training split only; the test set is transformed with the same scaler and the integration suite includes an explicit regression test (`test_trainer_no_data_leakage`).
 - **Inference can't drift.** `trainer.py` writes a `*_meta.json` with `feature_columns`, `close_col_idx`, and `seq_length`; `Predictor` reads it and rejects DataFrames with the wrong columns.
 - **Timeframe-aware Sharpe.** `periods_per_year('15m')` converts the configured CCXT timeframe into the right annualization factor — no hard-coded 252.

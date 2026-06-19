@@ -34,8 +34,18 @@ models/*.h5
 models/*.pb
 models/*.keras
 models/*.pkl
+models/*_meta.json
 *.pkl
 *.joblib
+
+# Tooling caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Local dev tooling (not for the public repo)
+.claude/
+.mcp.json
 
 # Notebooks
 notebooks/*.ipynb_checkpoints/

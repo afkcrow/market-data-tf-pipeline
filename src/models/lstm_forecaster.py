@@ -6,6 +6,7 @@ LSTM model that adapts to the number of features in the input data.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -75,9 +76,11 @@ class LSTMForecaster(BaseForecaster):
         batch_size: int = 32,
         validation_split: float = 0.2,
         patience: int = 5,
+        **kwargs: Any,
     ):
         if self.model is None:
             self.build_model(X.shape[2])
+        assert self.model is not None  # build_model always assigns it
 
         logger.info(f"Training on {X.shape[0]} samples for up to {epochs} epochs")
 
@@ -106,7 +109,7 @@ class LSTMForecaster(BaseForecaster):
     def predict(self, X: np.ndarray) -> np.ndarray:
         if self.model is None:
             raise ValueError("Model not trained yet.")
-        return self.model.predict(X, verbose=0).flatten()
+        return np.asarray(self.model.predict(X, verbose=0)).flatten()
 
     def save_model(self, filepath: str = "models/lstm_forecaster.keras") -> None:
         if self.model:

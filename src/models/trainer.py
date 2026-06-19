@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
+from src.evaluation.baseline import compare_to_persistence
 from src.features.technical import add_all_features
 from src.models.lstm_forecaster import LSTMForecaster
 
@@ -78,7 +79,7 @@ class PipelineTrainer:
         n_features = self.scaler.n_features_in_
         dummy = np.zeros((len(scaled_values), n_features))
         dummy[:, self._close_col_idx] = scaled_values
-        return self.scaler.inverse_transform(dummy)[:, self._close_col_idx]
+        return np.asarray(self.scaler.inverse_transform(dummy))[:, self._close_col_idx]
 
     def train_model(
         self,
@@ -106,7 +107,17 @@ class PipelineTrainer:
         y_test_real = self.inverse_transform_prices(y_test)
         test_mae = float(np.mean(np.abs(test_predictions - y_test_real)))
 
+        # Compare against a naive persistence forecast (next close = current close).
+        # If the LSTM doesn't beat this, it hasn't learned anything useful.
+        baseline = compare_to_persistence(test_predictions, y_test_real)
+
         logger.info(f"Training finished. Test MAE: ${test_mae:.2f}")
+        logger.info(
+            f"Persistence MAE: ${baseline['persistence_mae']:.2f} | "
+            f"skill score: {baseline['skill_score']:+.3f} "
+            f"({'beats' if baseline['beats_persistence'] else 'does NOT beat'} baseline) | "
+            f"directional accuracy: {baseline['directional_accuracy']:.1%}"
+        )
 
         model_path = models_dir / f"lstm_{symbol}.keras"
         scaler_path = models_dir / f"lstm_{symbol}_scaler.pkl"
@@ -132,6 +143,7 @@ class PipelineTrainer:
 
         return {
             "test_mae": test_mae,
+            "baseline": baseline,
             "model_path": str(model_path),
             "scaler_path": str(scaler_path),
             "meta_path": str(meta_path),
@@ -145,9 +157,16 @@ if __name__ == "__main__":
     trainer = PipelineTrainer()
     try:
         results = trainer.train_model(epochs=8)
+        b = results["baseline"]
         print("\nTraining completed successfully!")
-        print(f"Test MAE: ${results['test_mae']:.2f}")
-        print(f"Model saved to: {results['model_path']}")
+        print(f"Test MAE:        ${results['test_mae']:.2f}")
+        print(f"Persistence MAE: ${b['persistence_mae']:.2f}")
+        print(
+            f"Skill score:     {b['skill_score']:+.3f} "
+            f"({'beats' if b['beats_persistence'] else 'does NOT beat'} persistence)"
+        )
+        print(f"Directional acc: {b['directional_accuracy']:.1%}")
+        print(f"Model saved to:  {results['model_path']}")
     except Exception as e:
         print(f"\nError: {e}")
         print("Tip: Run the fetcher first (`uv run -m src.data.fetcher`)")
