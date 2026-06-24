@@ -47,10 +47,6 @@ models/*_meta.json
 .claude/
 .mcp.json
 
-# Notebooks
-notebooks/*.ipynb_checkpoints/
-notebooks/*/.ipynb_checkpoints/
-
 # Environment
 .env
 .env.local

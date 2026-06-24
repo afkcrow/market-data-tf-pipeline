@@ -7,7 +7,6 @@ echo "🚀 Creating professional MLOps project structure for market-data-tf-pipe
 # Create main directories
 mkdir -p .github/workflows
 mkdir -p src/data src/features src/models src/inference src/evaluation src/config
-mkdir -p notebooks
 mkdir -p tests/unit tests/integration
 mkdir -p data/raw data/processed
 mkdir -p models reports docs deployment
@@ -29,10 +28,6 @@ touch src/models/trainer.py
 touch src/inference/predictor.py
 touch src/evaluation/backtester.py
 touch src/config/settings.py
-
-touch notebooks/01_data_exploration.ipynb
-touch notebooks/02_feature_exploration.ipynb
-touch notebooks/03_model_prototyping.ipynb
 
 touch tests/unit/test_fetcher.py
 touch tests/unit/test_features.py
@@ -87,10 +82,6 @@ models/*.h5
 models/*.pb
 *.pkl
 *.joblib
-
-# Notebooks
-notebooks/*.ipynb_checkpoints/
-notebooks/*/.ipynb_checkpoints/
 
 # Environment
 .env

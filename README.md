@@ -94,7 +94,6 @@ market-data-tf-pipeline/
 │   ├── unit/                       # Mocked-exchange + feature tests
 │   └── integration/                # Pipeline + backtester end-to-end
 ├── scripts/                        # CLI entry points (train / predict)
-├── notebooks/                      # Exploration notebooks
 ├── deployment/Dockerfile           # Multi-stage Streamlit container
 ├── docs/architecture.md            # System diagram + module guide
 └── .github/workflows/              # CI: lint, type-check, test, fmt-check
