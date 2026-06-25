@@ -115,7 +115,3 @@ class LSTMForecaster(BaseForecaster):
         if self.model:
             self.model.save(filepath)
             logger.info(f"Model saved to {filepath}")
-
-
-if __name__ == "__main__":
-    print("lstm_forecaster.py loaded successfully")

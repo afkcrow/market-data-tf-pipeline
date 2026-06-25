@@ -59,10 +59,3 @@ def add_all_features(df: pd.DataFrame) -> pd.DataFrame:
     df = add_moving_averages(df)
     df = add_volatility(df)
     return df
-
-
-# Quick test (run with: uv run -m src.features.technical)
-if __name__ == "__main__":
-    # Example usage
-    print("✅ technical.py loaded successfully")
-    print("Use: df = add_all_features(your_dataframe)")
