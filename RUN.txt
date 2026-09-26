@@ -1,0 +1,24 @@
+market-data-tf-pipeline -- CCXT fetch -> TensorFlow LSTM -> Streamlit dashboard
+================================================================================
+
+PREREQS
+  uv (Python 3.12 is pinned in .python-version), make (optional)
+  cp .env.example .env      # optional: API keys, DATA_INTERVAL, SYMBOLS
+
+INSTALL
+  cd market-data-tf-pipeline
+  make sync                 # = uv sync
+
+RUN (in this order the first time)
+  make fetch                # = uv run python -m src.data.fetcher   (OHLCV -> Parquet)
+  make train                # = uv run python -m src.models.trainer
+  make predict              # = PYTHONPATH=. uv run python scripts/predict.py --symbol BTC-USDT
+  make app                  # = uv run streamlit run app.py
+
+TEST / QUALITY
+  make test                 # = uv run pytest tests/ -v --tb=short
+  make test-fast
+  make lint                 # ruff check
+  make fmt                  # ruff format
+  make typecheck            # mypy src/
+  make clean                # remove caches
